@@ -1,6 +1,6 @@
 # PS-WeatherInfo
 Просмотр информации о погоде
-
+Для получения данных используется открытый источник https://wttr.in/
 v0.02 вторая версия программы
 * добавлена строка состояния
 [Скачать](https://github.com/viclyapunov/PS-WeatherInfo/blob/c390bcba288d34f14717b72d30a458179201dea3/App.ps1)
