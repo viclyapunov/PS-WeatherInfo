@@ -51,7 +51,7 @@ $topGroupBox.Controls.Add($button)
 $outputGroupBox = New-Object System.Windows.Forms.GroupBox
 $outputGroupBox.Text = "Прогноз погоды"
 $outputGroupBox.Width = 920
-$outputGroupBox.Height = 480
+$outputGroupBox.Height = 440
 $outputGroupBox.Location = New-Object System.Drawing.Point(20, 100)
 $form.Controls.Add($outputGroupBox)
 
@@ -60,11 +60,35 @@ $richTextBox = New-Object System.Windows.Forms.RichTextBox
 $richTextBox.Multiline = $true
 $richTextBox.ScrollBars = "Both"
 $richTextBox.Width = 900
-$richTextBox.Height = 450
+$richTextBox.Height = 410
 $richTextBox.Location = New-Object System.Drawing.Point(10, 20)
 $richTextBox.Font = New-Object System.Drawing.Font("Consolas", 10)
 $richTextBox.ReadOnly = $true
 $outputGroupBox.Controls.Add($richTextBox)
+
+# Создаем StatusBar
+$statusBar = New-Object System.Windows.Forms.StatusBar
+$statusBar.Name = "statusBar"
+$statusBar.SizingGrip = $false
+$statusBar.ShowPanels = $true
+
+# Панель для информации о последнем обновлении
+$updatePanel = New-Object System.Windows.Forms.StatusBarPanel
+$updatePanel.Name = "updatePanel"
+$updatePanel.Text = "Последнее обновление: никогда"
+$updatePanel.AutoSize = [System.Windows.Forms.StatusBarPanelAutoSize]::Spring
+
+# Панель для копирайта
+$copyrightPanel = New-Object System.Windows.Forms.StatusBarPanel
+$copyrightPanel.Name = "copyrightPanel"
+$copyrightPanel.Text = "© Виктор Ляпунов, 2025"
+$copyrightPanel.AutoSize = [System.Windows.Forms.StatusBarPanelAutoSize]::Contents
+
+# Добавляем панели в StatusBar
+$statusBar.Panels.AddRange(@($updatePanel, $copyrightPanel))
+
+# Добавляем StatusBar в форму
+$form.Controls.Add($statusBar)
 
 # Обработчик нажатия кнопки
 $button.Add_Click({
@@ -72,9 +96,6 @@ $button.Add_Click({
         $displayName = $comboBox.SelectedItem.ToString()
         $cityForUrl = $cityMappings[$displayName]
         
-        # Отладочный вывод переменной $cityForUrl
-        # [System.Windows.Forms.MessageBox]::Show("$cityForUrl", "cityForUrl")
-                
         $richTextBox.Text = "Загружаю прогноз для $displayName..."
         $form.Refresh()
 
@@ -86,9 +107,6 @@ $button.Add_Click({
         # Формируем URL (уже правильно закодирован в словаре)
         $url = "https://wttr.in/$cityForUrl"
         
-        # Отладочный вывод итогового URL
-        # [System.Windows.Forms.MessageBox]::Show("$url", "URL")
-        
         # Запрашиваем данные
         $response = $client.GetAsync($url).Result
 
@@ -96,6 +114,10 @@ $button.Add_Click({
             $weatherData = $response.Content.ReadAsStringAsync().Result
             $cleanText = $weatherData -replace '\x1B\[[0-9;]*[mK]', ''
             $richTextBox.Text = $cleanText
+            
+            # Обновляем информацию о последнем обновлении
+            $updatePanel.Text = "Последнее обновление: $(Get-Date -Format 'dd.MM.yyyy HH:mm:ss')"
+            $statusBar.Refresh()
         } else {
             $richTextBox.Text = "Ошибка: Сервер вернул код " + $response.StatusCode
         }
